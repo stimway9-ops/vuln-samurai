@@ -1,0 +1,16 @@
+docker run -d \
+  --name vulnsamurai \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  -v vulnsamurai_data:/data \
+  -e MONGO_APP_USER=vsapp \
+  -e MONGO_APP_PASS=vspassword123 \
+  -e MONGO_URI=mongodb://vsapp:vspassword123@localhost:27017/vulnsamurai \
+  -e JWT_SECRET=$(openssl rand -hex 64) \
+  -e JWT_ALGORITHM=HS256 \
+  -e ACCESS_TOKEN_EXPIRE_MINUTES=15 \
+  -e REFRESH_TOKEN_EXPIRE_DAYS=7 \
+  -e BACKEND_URL=http://localhost:8000 \
+  -e SESSION_SECRET=$(openssl rand -hex 32) \
+  -e PORT=3000 \
+  absolonfury/vulnsamurai:latest
