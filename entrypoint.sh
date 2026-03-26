@@ -62,7 +62,7 @@ if [ ! -f "$INIT_FLAG" ]; then
     # Create default user: samurai/samurai
     # Using pre-computed bcrypt hash for password "samurai"
     DEFAULT_USER="samurai"
-    DEFAULT_PASS_HASH="\$2b\$12\$N9qo8uLOickgx2ZMRZoMyeGjZFy53TH2JNekrDPgs.VGgi.MWjiyS"
+    DEFAULT_PASS_HASH="$2b$12$fflarM/06FPvN3e6.r1Kx.Ql0cCG3YPKXyGnBjWkVDlV.fZH9HmRm"
     mongo vulnsamurai --eval "
       db.users.updateOne(
         { username: '$DEFAULT_USER' },
