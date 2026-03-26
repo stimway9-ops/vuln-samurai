@@ -37,34 +37,22 @@ if [ ! -f "$INIT_FLAG" ]; then
     APP_USER="${MONGO_APP_USER:-vsapp}"
     APP_PASS="${MONGO_APP_PASS:-vspassword123}"
 
-    cat > /tmp/init.js << 'INITSCRIPT'
-    db.createUser({
-        user: '#{APP_USER}',
-        pwd:  '#{APP_PASS}',
-        roles: [{ role: 'readWrite', db: 'vulnsamurai' }]
-    });
-    db.createCollection('users');
-    db.createCollection('scans');
-    db.createCollection('vulns');
-    db.createCollection('reports');
-    db.createCollection('audit_logs');
-    db.users.createIndex({ email: 1 }, { unique: true });
-    db.users.createIndex({ username: 1 }, { unique: true });
-    db.scans.createIndex({ owner_id: 1 });
-    db.scans.createIndex({ status: 1 });
-    db.scans.createIndex({ created_at: -1 });
-    db.vulns.createIndex({ owner_id: 1 });
-    db.vulns.createIndex({ scan_id: 1 });
-    db.vulns.createIndex({ severity: 1 });
-    db.vulns.createIndex({ owner_id: 1, severity: 1, created_at: -1 });
-    db.audit_logs.createIndex({ timestamp: 1 }, { expireAfterSeconds: 7776000 });
-    print('done');
-    INITSCRIPT
-
-    sed -i "s|#{APP_USER}|$APP_USER|g" /tmp/init.js
-    sed -i "s|#{APP_PASS}|$APP_PASS|g" /tmp/init.js
-
-    mongo vulnsamurai /tmp/init.js
+    mongo vulnsamurai --eval "db.createUser({user: '$APP_USER', pwd: '$APP_PASS', roles: [{role: 'readWrite', db: 'vulnsamurai'}]})"
+    mongo vulnsamurai --eval "db.createCollection('users')"
+    mongo vulnsamurai --eval "db.createCollection('scans')"
+    mongo vulnsamurai --eval "db.createCollection('vulns')"
+    mongo vulnsamurai --eval "db.createCollection('reports')"
+    mongo vulnsamurai --eval "db.createCollection('audit_logs')"
+    mongo vulnsamurai --eval "db.users.createIndex({email: 1}, {unique: true})"
+    mongo vulnsamurai --eval "db.users.createIndex({username: 1}, {unique: true})"
+    mongo vulnsamurai --eval "db.scans.createIndex({owner_id: 1})"
+    mongo vulnsamurai --eval "db.scans.createIndex({status: 1})"
+    mongo vulnsamurai --eval "db.scans.createIndex({created_at: -1})"
+    mongo vulnsamurai --eval "db.vulns.createIndex({owner_id: 1})"
+    mongo vulnsamurai --eval "db.vulns.createIndex({scan_id: 1})"
+    mongo vulnsamurai --eval "db.vulns.createIndex({severity: 1})"
+    mongo vulnsamurai --eval "db.vulns.createIndex({owner_id: 1, severity: 1, created_at: -1})"
+    mongo vulnsamurai --eval "db.audit_logs.createIndex({timestamp: 1}, {expireAfterSeconds: 7776000})"
 
     touch "$INIT_FLAG"
     echo "[2/3] Database ready."
