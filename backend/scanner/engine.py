@@ -299,8 +299,8 @@ def _commands(url: str) -> dict:
         "gobuster": [
             "gobuster", "dir",
             "-u", url,
-            "-w", "/usr/share/wordlists/dirb/common.txt",
-            "-t", "20",
+            "-w", "/usr/share/wordlists/common.txt",
+            "-t", "10",
             "--no-error",
             "-q",
         ],

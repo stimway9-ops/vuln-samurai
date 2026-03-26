@@ -17,9 +17,11 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl1.1 \
     nikto whatweb gobuster sqlmap wapiti \
-    && mkdir -p /usr/share/wordlists \
-    && wget -q -O /usr/share/wordlists/dirb/common.txt https://raw.githubusercontent.com/v0re/dirb/master/wordlists/common.txt \
     && rm -rf /var/lib/apt/lists/*
+
+# ── Gobuster wordlist ─────────────────────────────────────────────────────────
+RUN mkdir -p /usr/share/wordlists && \
+    echo "/admin\n/administrator\n/login\n/dashboard\n/config\n/api\n/backup\n/phpinfo\n/.git\n/wp-admin" > /usr/share/wordlists/common.txt
 
 # ── Python 3.9 ─────────────────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
