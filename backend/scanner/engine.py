@@ -4,12 +4,13 @@ Runs tools sequentially: whatweb → nikto → gobuster → wapiti → sqlmap �
 Each tool writes parsed results incrementally to MongoDB.
 """
 
+from __future__ import annotations
 import asyncio
 import json
 import re
 import subprocess
 from datetime import datetime, timezone
-from typing import List, Optional, AsyncGenerator
+from typing import List, Optional, AsyncGenerator, Tuple, Tuple
 
 from bson import ObjectId
 
@@ -38,7 +39,7 @@ def _sev(s: str) -> Severity:
 
 # ── Subprocess runner (async) ──────────────────────────────
 
-async def _run(cmd: List[str], timeout: int = 300) -> tuple[str, str, int]:
+async def _run(cmd: List[str], timeout: int = 300) -> Tuple[str, str, int]:
     """Run a subprocess asynchronously, return (stdout, stderr, returncode)."""
     proc = await asyncio.create_subprocess_exec(
         *cmd,
