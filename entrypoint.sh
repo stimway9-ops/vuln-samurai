@@ -3,6 +3,11 @@ set -e
 
 mkdir -p /data/db /data/log
 
+# Load environment variables
+if [ -f /app/.env ]; then
+    export $(grep -v '^#' /app/.env | xargs)
+fi
+
 INIT_FLAG="/data/db/.initialized"
 
 echo "======================================"
@@ -29,8 +34,11 @@ done
 if [ ! -f "$INIT_FLAG" ]; then
     echo "[2/3] Initialising database..."
 
-    # Create user with fixed credentials
-    mongo vulnsamurai --eval 'db.createUser({user: "vsapp", pwd: "vspassword123", roles: [{role: "readWrite", db: "vulnsamurai"}]})'
+    APP_USER="${MONGO_APP_USER:-vsapp}"
+    APP_PASS="${MONGO_APP_PASS:-vspassword123}"
+
+    # Create application user
+    mongo vulnsamurai --eval "db.createUser({user: '$APP_USER', pwd: '$APP_PASS', roles: [{role: 'readWrite', db: 'vulnsamurai'}]})"
 
     # Create collections
     mongo vulnsamurai --eval 'db.createCollection("users")'
@@ -50,6 +58,33 @@ if [ ! -f "$INIT_FLAG" ]; then
     mongo vulnsamurai --eval 'db.vulns.createIndex({severity: 1})'
     mongo vulnsamurai --eval 'db.vulns.createIndex({owner_id: 1, severity: 1, created_at: -1})'
     mongo vulnsamurai --eval 'db.audit_logs.createIndex({timestamp: 1}, {expireAfterSeconds: 7776000})'
+
+    # Create default user: samurai/samurai
+    # Hash the password using the same method as the backend (bcrypt)
+    DEFAULT_USER="samurai"
+    DEFAULT_PASS="samurai"
+    PASS_HASH=$(python3 -c "
+from passlib.context import CryptContext
+pwd_ctx = CryptContext(schemes=['bcrypt'], deprecated='auto')
+print(pwd_ctx.hash('$DEFAULT_PASS'))
+")
+    mongo vulnsamurai --eval "
+      db.users.updateOne(
+        { username: '$DEFAULT_USER' },
+        { 
+          \$setOnInsert: {
+            username: '$DEFAULT_USER',
+            email: 'samurai@example.com',
+            password_hash: '$PASS_HASH',
+            role: 'analyst',
+            created_at: new Date(),
+            last_login: null,
+            is_active: true
+          }
+        },
+        { upsert: true }
+      )
+    "
 
     touch "$INIT_FLAG"
     echo "[2/3] Database ready."
