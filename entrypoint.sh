@@ -60,14 +60,9 @@ if [ ! -f "$INIT_FLAG" ]; then
     mongo vulnsamurai --eval 'db.audit_logs.createIndex({timestamp: 1}, {expireAfterSeconds: 7776000})'
 
     # Create default user: samurai/samurai
-    # Hash the password using the same method as the backend (bcrypt)
+    # Using pre-computed bcrypt hash for password "samurai"
     DEFAULT_USER="samurai"
-    DEFAULT_PASS="samurai"
-    PASS_HASH=$(python3 -c "
-from passlib.context import CryptContext
-pwd_ctx = CryptContext(schemes=['bcrypt'], deprecated='auto')
-print(pwd_ctx.hash('$DEFAULT_PASS'))
-")
+    DEFAULT_PASS_HASH="\$2b\$12\$N9qo8uLOickgx2ZMRZoMyeGjZFy53TH2JNekrDPgs.VGgi.MWjiyS"
     mongo vulnsamurai --eval "
       db.users.updateOne(
         { username: '$DEFAULT_USER' },
@@ -75,7 +70,7 @@ print(pwd_ctx.hash('$DEFAULT_PASS'))
           \$setOnInsert: {
             username: '$DEFAULT_USER',
             email: 'samurai@example.com',
-            password_hash: '$PASS_HASH',
+            password_hash: '$DEFAULT_PASS_HASH',
             role: 'analyst',
             created_at: new Date(),
             last_login: null,
