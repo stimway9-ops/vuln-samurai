@@ -65,6 +65,7 @@ COPY frontend/ /app/frontend/
 RUN cd /app/frontend && npm install --omit=dev
 
 # ── Config files ───────────────────────────────────────────────────────────────
+RUN mkdir -p /etc/supervisor/conf.d
 COPY supervisord.conf /etc/supervisor/conf.d/vulnsamurai.conf
 COPY entrypoint.sh    /entrypoint.sh
 RUN chmod +x /entrypoint.sh
