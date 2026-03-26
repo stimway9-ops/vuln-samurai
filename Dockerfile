@@ -56,7 +56,7 @@ RUN mkdir -p /data/db /data/log /app/backend /app/frontend/static
 
 # ── Backend (Python/FastAPI) ───────────────────────────────────────────────────
 COPY backend/requirements.txt /app/backend/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/backend/requirements.txt
+RUN pip3 install --no-cache-dir --force-reinstall -r /app/backend/requirements.txt
 
 COPY backend/ /app/backend/
 
