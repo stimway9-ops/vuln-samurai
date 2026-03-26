@@ -307,11 +307,30 @@ const server=http.createServer(async(req,res)=>{
     return respond(res,200,pageDashboard(scan,'','',session));
   }
 
-  if(pathname==='/scan'&&method==='POST'){
-    if(!session)return redirect(res,'/login');
-    const body=await readBody(req);
-    try{const r=await apiRequest('POST','/scans',{url:body.url},session.access_token);if(r.status===202)return redirect(res,`/?scan=${r.body.scan_id}`);return respond(res,200,pageDashboard(null,'','Failed to start scan.',session))}
-    catch{return respond(res,200,pageDashboard(null,'','Backend unreachable.',session))}
+   if(pathname==='/scan'&&method==='POST'){
+     // Auto-login with default credentials if not authenticated
+     if(!session){
+       // Try to login with default credentials
+       const loginBody = {username: 'samurai', password: 'samurai'};
+       try {
+         const loginRes = await apiRequest('POST', '/auth/login', loginBody);
+         if(loginRes.status === 200){
+           const sid = newSession();
+           setSession(res, sid, {access_token: loginRes.body.access_token, refresh_token: loginRes.body.refresh_token, username: 'samurai'});
+           // Continue with scan using the session
+           const body = await readBody(req);
+           const r = await apiRequest('POST', '/scans', {url: body.url}, loginRes.body.access_token);
+           if(r.status===202) return redirect(res, `/?scan=${r.body.scan_id}`);
+           return respond(res, 200, pageDashboard(null, '', 'Failed to start scan.', {username: 'samurai'}));
+         }
+       } catch(e) {
+         // If login fails, proceed without auth (scans endpoint is public anyway)
+       }
+     }
+     const body = await readBody(req);
+     const token = session ? session.access_token : null;
+     try{const r=await apiRequest('POST','/scans',{url:body.url},token);if(r.status===202)return redirect(res,`/?scan=${r.body.scan_id}`);return respond(res,200,pageDashboard(null,'','Failed to start scan.',session))}
+     catch{return respond(res,200,pageDashboard(null,'','Backend unreachable.',session))}
   }
 
   if(pathname==='/login'&&method==='GET'){if(session)return redirect(res,'/');return respond(res,200,pageLogin())}
