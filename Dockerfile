@@ -67,7 +67,6 @@ RUN cd /app/frontend && npm install --omit=dev
 # ── Config files ───────────────────────────────────────────────────────────────
 COPY supervisord.conf /etc/supervisor/conf.d/vulnsamurai.conf
 COPY entrypoint.sh    /entrypoint.sh
-COPY .env             /app/.env
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 3000
